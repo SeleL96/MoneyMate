@@ -37,7 +37,7 @@
   };
 
   /* ---------- stato ---------- */
-  var DEFAULT = { user:null, income:null, expenses:[], previous:{}, transactions:[] };
+  var DEFAULT = { user:null, income:null, expenses:[], previous:{}, transactions:[], seeded:false };
   var state = load();
   var level = "simple";
   var currentDoc = "mutuo";
@@ -58,7 +58,10 @@
     $("sb-av").textContent = n.charAt(0).toUpperCase();
     $("sb-who").innerHTML = n.charAt(0).toUpperCase()+n.slice(1)+"<small>Account demo</small>";
     $("dash-greet").textContent = "Ciao "+(n.charAt(0).toUpperCase()+n.slice(1))+"!";
-    renderCatSelect(); renderDashboard(); renderExpenseList(); loadDoc("mutuo", document.querySelector('.doc-pill[aria-pressed="true"]'));
+    renderCatSelect();
+    // Primo accesso: precompila con i dati di esempio (alert pronti, budget pronto per la chat)
+    if(!state.seeded && state.income==null && !state.expenses.length){ applyDemoData(); }
+    renderDashboard(); renderExpenseList(); loadDoc("mutuo", document.querySelector('.doc-pill[aria-pressed="true"]'));
     showView("dashboard");
   }
   function showView(name){
@@ -181,11 +184,16 @@
     }).join("");
     tot.textContent = "Totale: "+eur(C.round2(total))+" €";
   }
-  function loadDemo(){
+  function applyDemoData(){
     var seed=D.demo_seed; state.income=seed.income;
     state.expenses=seed.expenses.map(function(e,i){ return { id:Date.now()+i, category:e.category, amount:e.amount, desc:e.desc||"" }; });
     state.previous = seed.previous || {};
     state.transactions = seed.transactions || [];
+    state.seeded = true; save();
+  }
+  function loadDemo(){ applyDemoData(); renderDashboard(); renderExpenseList(); showView("dashboard"); }
+  function resetData(){
+    state.income=null; state.expenses=[]; state.previous={}; state.transactions=[]; state.seeded=true;
     save(); renderDashboard(); renderExpenseList(); showView("dashboard");
   }
 
@@ -389,7 +397,7 @@
   window.MM = {
     login:login, logout:logout, showView:showView, setLevel:setLevel,
     openIncomeModal:openIncomeModal, confirmIncome:confirmIncome, saveIncomeFromField:saveIncomeFromField,
-    addExpense:addExpense, deleteExpense:deleteExpense, loadDemo:loadDemo,
+    addExpense:addExpense, deleteExpense:deleteExpense, loadDemo:loadDemo, resetData:resetData,
     explain:explain, explainCat:explainCat, closeModal:closeModal,
     loadDoc:loadDoc, ask:ask, sendMsg:sendMsg, onFile:onFile
   };

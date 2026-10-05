@@ -95,7 +95,10 @@
             <div><label for="e-income" style="font-size:13px;font-weight:600;color:var(--slate700);display:block;margin-bottom:5px">Entrate mensili (€)</label>
               <div style="display:flex;gap:8px"><input id="e-income" type="number" min="0" step="0.01" style="flex:1;border:1.4px solid var(--bordo);border-radius:10px;padding:10px 12px;font:inherit;font-size:15px" />
                 <button class="btn btn--secondary btn--sm" onclick="MM.saveIncomeFromField()">Salva</button></div></div>
-            <button class="btn btn--tertiary btn--sm" style="margin-top:14px" onclick="MM.loadDemo()">Carica dati di esempio (Giulia)</button>
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn--tertiary btn--sm" onclick="MM.loadDemo()">Carica dati di esempio (Giulia)</button>
+              <button class="btn btn--tertiary btn--sm" style="color:var(--rosso)" onclick="MM.resetData()">Ricomincia da zero</button>
+            </div>
           </div>
           <div>
             <div class="page-head" style="margin-bottom:12px"><h3 class="section-h" style="margin:0">Spese inserite</h3><span id="exp-total" class="eyebrow"></span></div>
