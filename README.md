@@ -70,9 +70,21 @@ python scripts/build_app_data.py
 # 2) Esegui i test del motore (i numeri devono essere esatti)
 python -m pytest tests/ -q
 
-# 3) Avvia la dashboard in locale e apri http://localhost:4599
-python -m http.server 4599 --directory app
+# 3) Avvia la dashboard (serve l'app + chat) e apri http://localhost:8000
+python server/server.py
 ```
+
+### Chat: Claude reale (facoltativo)
+La chat "Capire i documenti" funziona **offline** con un motore a regole. Per farla diventare
+una **vera conversazione con Claude**, imposta una API key prima di avviare il server:
+
+```bash
+set ANTHROPIC_API_KEY=sk-ant-...     # Windows (PowerShell: $env:ANTHROPIC_API_KEY="sk-ant-...")
+python server/server.py
+```
+
+Opzionale: `ANTHROPIC_MODEL` (default `claude-opus-5-5`; per una chat più rapida/economica
+`claude-haiku-4-5`). Senza key, la chat ripiega automaticamente sul motore locale.
 
 Provare una skill in isolamento:
 

@@ -244,8 +244,15 @@
   var GUARD="Non posso dirti se <strong>conviene</strong> o se firmare: sarebbe un consiglio, e io spiego soltanto. Però posso aiutarti a decidere da sola: dimmi quali voci vuoi capire (TAN, TAEG, spread, rata…) e ti spiego come incidono sul costo.";
   function bubble(who,html){ return '<div class="msg '+(who==="bot"?"bot":"me")+'"><span class="av">'+svg(who==="bot"?IC.bot:IC.user)+'</span><span class="bubble">'+html+'</span></div>'; }
   function renderSuggest(){ $("suggest").innerHTML=(SUGGEST[currentDoc]||[]).map(function(s){ return '<button type="button" onclick="MM.ask(this.textContent)">'+s+'</button>'; }).join(""); }
-  function loadDoc(type,btn){ currentDoc=type; if(btn){ btn.parentNode.querySelectorAll(".doc-pill").forEach(function(b){ b.setAttribute("aria-pressed",b===btn); }); } $("thread").innerHTML=bubble("bot","Ciao! "+DOC_GREETING[type]); renderSuggest(); }
-  var lastUpload=null;  // ultimo documento caricato: {kind, amount, label}
+  function loadDoc(type,btn){
+    currentDoc=type;
+    if(btn){ btn.parentNode.querySelectorAll(".doc-pill").forEach(function(b){ b.setAttribute("aria-pressed",b===btn); }); }
+    history=[]; lastDocText=""; lastUpload=null;   // nuova conversazione
+    $("thread").innerHTML=bubble("bot","Ciao! "+DOC_GREETING[type]); renderSuggest();
+  }
+  var lastUpload=null;   // ultimo documento caricato: {kind, amount, label}
+  var lastDocText="";    // testo grezzo dell'ultimo documento (contesto per la chat)
+  var history=[];        // storico conversazione per l'LLM: [{role, content}]
   var IMPACT=/impatt|permetter|quanto devo risparmiar|sul (mio )?budget|posso permetterm/;
 
   function detectUpload(low){
@@ -279,19 +286,59 @@
     return head+" In un anno sono <strong>"+eur(im.annual)+" €</strong>. È un costo ricorrente che incide sul tuo budget; come gestirlo sta a te.";
   }
 
+  /* Motore locale (fallback quando non c'e' Claude via API) */
   function botAnswer(text){
-    var t=text.toLowerCase();
+    var t=text.toLowerCase().trim();
     if(ADVICE.some(function(r){return r.test(t);})) return GUARD;
-    if(IMPACT.test(t)){
-      if(lastUpload) return impactMessage(lastUpload);
-      return "Carica prima un documento (es. una proposta di mutuo) con «Carica il tuo», poi ti dico che impatto ha sul tuo budget.";
+    if(/^(ciao|salve|buongiorno|buonasera|ehi|hey)\b/.test(t))
+      return "Ciao! Posso spiegarti le voci di un documento (bolletta, estratto conto, mutuo) o mostrarti che impatto ha un costo sul tuo budget. Da dove vuoi iniziare?";
+    if(/\bgrazie\b/.test(t))
+      return "Di nulla! Se vuoi, chiedimi un altro termine oppure «che impatto ha sul mio budget?».";
+    if(/aiut|cosa (sai|puoi) fare|come funzion/.test(t))
+      return "Posso aiutarti così: <ul style=\"margin:8px 0 0;padding-left:18px\"><li>spiego sigle e voci in parole semplici (TAEG, spread, canone…)</li><li>leggo un documento che carichi e ne riconosco le voci</li><li>ti mostro l'impatto di un costo sul tuo budget</li></ul>Non do consigli: spiego soltanto.";
+    if(IMPACT.test(t))
+      return lastUpload ? impactMessage(lastUpload)
+        : "Carica prima un documento (es. una proposta di mutuo) con «Carica il tuo», poi ti dico che impatto ha sul tuo budget.";
+    var hits=(D.glossary||[]).filter(function(e){ return e.aliases.some(function(a){ return t.indexOf(a)>=0; }); });
+    if(hits.length===1) return "<strong>"+hits[0].term+"</strong> — "+hits[0].definizione+" <em>Esempio:</em> "+hits[0].esempio;
+    if(hits.length>1) return "Ho riconosciuto più voci:<ul style=\"margin:8px 0 0;padding-left:18px\">"+
+      hits.map(function(e){ return "<li style=\"margin-bottom:6px\"><strong>"+e.term+"</strong>: "+e.definizione+"</li>"; }).join("")+"</ul>";
+    return "Non ho trovato questa parola. Prova a scrivermi il termine esatto che vedi (es. «spread», «canone», «TAEG»), oppure chiedimi «che impatto ha sul mio budget?».";
+  }
+
+  function stripTags(h){ return (""+h).replace(/<[^>]+>/g,""); }
+  function buildContext(){
+    var ctx={ glossary_terms:(D.glossary||[]).map(function(e){return e.term;}) };
+    if(state.income!=null){
+      var b=C.budgetBreakdown(state.income, state.expenses);
+      ctx.budget={ income:b.income, spent:b.total_spent, saved:b.saved,
+        categories:b.by_category.map(function(c){return c.label+" "+c.amount+"EUR ("+c.pct_income+"%)";}).join(", ") };
     }
-    var hit=(D.glossary||[]).find(function(e){ return e.aliases.some(function(a){ return t.indexOf(a)>=0; }); });
-    if(hit) return "<strong>"+hit.term+"</strong> — "+hit.definizione+" <em>Esempio:</em> "+hit.esempio;
-    return "Non ho trovato questa parola nel documento. Prova a scrivermi il termine esatto che vedi (es. «spread», «canone», «TAEG») e te lo spiego subito.";
+    if(lastDocText) ctx.document=lastDocText;
+    return ctx;
+  }
+  function showTyping(){ var th=$("thread"); th.insertAdjacentHTML("beforeend",'<div class="msg bot" id="typing"><span class="av">'+svg(IC.bot)+'</span><span class="bubble">sta scrivendo…</span></div>'); th.scrollTop=th.scrollHeight; }
+  function hideTyping(){ var e=$("typing"); if(e) e.remove(); }
+  function fetchReply(text){
+    return fetch("api/chat",{ method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ messages:history, context:buildContext() }) })
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(j){ return (j && j.mode==="llm" && j.reply) ? j.reply : botAnswer(text); })
+      .catch(function(){ return botAnswer(text); });
   }
   function pushMsg(who,html){ var th=$("thread"); th.insertAdjacentHTML("beforeend",bubble(who,html)); th.scrollTop=th.scrollHeight; }
-  function ask(text){ if(!text||!text.trim())return; pushMsg("me",text.replace(/</g,"&lt;")); setTimeout(function(){ pushMsg("bot",botAnswer(text)); },250); }
+  function ask(text){
+    if(!text||!text.trim()) return;
+    text=text.trim();
+    pushMsg("me", text.replace(/</g,"&lt;"));
+    history.push({ role:"user", content:text });
+    showTyping();
+    fetchReply(text).then(function(reply){
+      hideTyping();
+      pushMsg("bot", reply);
+      history.push({ role:"assistant", content: stripTags(reply) });
+    });
+  }
   function sendMsg(){ var inp=$("chatInput"); ask(inp.value); inp.value=""; inp.focus(); }
   function onFile(input){
     var f = input.files && input.files[0]; if(!f) return; input.value="";
@@ -303,25 +350,25 @@
     }
     var r=new FileReader();
     r.onload=function(){
-      var low=String(r.result||"").toLowerCase();
+      var raw=String(r.result||""); var low=raw.toLowerCase();
+      lastDocText=raw;                                   // contesto per la chat (anche LLM)
       pushMsg("me","📎 Ho caricato «"+name+"»");
+      history.push({ role:"user", content:"[Ho caricato il documento: "+name+"]\n"+raw.slice(0,3000) });
       // 1) spiegazione delle voci riconosciute
       var found=(D.glossary||[]).filter(function(e){ return e.aliases.some(function(a){ return low.indexOf(a)>=0; }); });
-      if(found.length){
-        pushMsg("bot","Ho letto «"+name+"». Ecco le voci che ho riconosciuto e cosa significano:<ul style=\"margin:8px 0 0;padding-left:18px\">"+
+      var rec = found.length
+        ? "Ho letto «"+name+"». Ecco le voci che ho riconosciuto e cosa significano:<ul style=\"margin:8px 0 0;padding-left:18px\">"+
           found.map(function(e){ return "<li style=\"margin-bottom:6px\"><strong>"+e.term+"</strong>: "+e.definizione+"</li>"; }).join("")+
-          "</ul>Chiedimi pure di una voce specifica per un esempio con numeri.");
-      } else {
-        pushMsg("bot","Ho letto il documento ma non ho riconosciuto voci note. Scrivimi una parola che vedi e te la spiego.");
-      }
+          "</ul>Chiedimi pure di una voce specifica per un esempio con numeri."
+        : "Ho letto il documento ma non ho riconosciuto voci note. Scrivimi una parola che vedi e te la spiego.";
+      pushMsg("bot", rec); history.push({ role:"assistant", content: stripTags(rec) });
       // 2) impatto sul budget (se individuo un importo ricorrente)
       lastUpload = detectUpload(low);
       if(lastUpload && lastUpload.amount){
-        if(state.income!=null && state.income>0){
-          setTimeout(function(){ pushMsg("bot", impactMessage(lastUpload)); }, 350);
-        } else {
-          setTimeout(function(){ pushMsg("bot","Vuoi sapere che <strong>impatto</strong> ha sul tuo budget? Imposta prima le tue entrate in «Le mie spese», poi chiedimi «che impatto ha sul mio budget?»."); }, 350);
-        }
+        var imp = (state.income!=null && state.income>0)
+          ? impactMessage(lastUpload)
+          : "Vuoi sapere che <strong>impatto</strong> ha sul tuo budget? Imposta prima le tue entrate in «Le mie spese», poi chiedimi «che impatto ha sul mio budget?».";
+        setTimeout(function(){ pushMsg("bot", imp); history.push({ role:"assistant", content: stripTags(imp) }); }, 350);
       }
     };
     r.readAsText(f);
