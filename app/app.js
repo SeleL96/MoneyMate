@@ -236,7 +236,7 @@
     conto:"Ho qui il tuo <strong>estratto conto</strong>. Chiedimi di una voce, ad esempio «cos'è l'imposta di bollo?»."
   };
   var SUGGEST={
-    mutuo:["Cos'è il TAEG?","Cosa vuol dire spread?","Cos'è la commissione istruttoria?","Mi conviene questo mutuo?"],
+    mutuo:["Cos'è il TAEG?","Cosa vuol dire spread?","Che impatto ha sul mio budget?","Mi conviene questo mutuo?"],
     bolletta:["Cos'è la quota fissa?","Cosa sono gli oneri di sistema?","Perché pago l'IVA?"],
     conto:["Cos'è l'imposta di bollo?","Perché pago il canone?","Cos'è la commissione bonifico?"]
   };
@@ -245,9 +245,47 @@
   function bubble(who,html){ return '<div class="msg '+(who==="bot"?"bot":"me")+'"><span class="av">'+svg(who==="bot"?IC.bot:IC.user)+'</span><span class="bubble">'+html+'</span></div>'; }
   function renderSuggest(){ $("suggest").innerHTML=(SUGGEST[currentDoc]||[]).map(function(s){ return '<button type="button" onclick="MM.ask(this.textContent)">'+s+'</button>'; }).join(""); }
   function loadDoc(type,btn){ currentDoc=type; if(btn){ btn.parentNode.querySelectorAll(".doc-pill").forEach(function(b){ b.setAttribute("aria-pressed",b===btn); }); } $("thread").innerHTML=bubble("bot","Ciao! "+DOC_GREETING[type]); renderSuggest(); }
+  var lastUpload=null;  // ultimo documento caricato: {kind, amount, label}
+  var IMPACT=/impatt|permetter|quanto devo risparmiar|sul (mio )?budget|posso permetterm/;
+
+  function detectUpload(low){
+    var m;
+    if(/mutuo/.test(low) || /\brata\b/.test(low)){
+      m=low.match(/rata[^0-9]*([0-9\.]+,[0-9]{2})/);
+      if(m) return { kind:"mutuo", amount:C.parseEur(m[1]), label:"La rata del mutuo" };
+    }
+    if(/totale da pagare/.test(low)){
+      m=low.match(/totale da pagare[^0-9]*([0-9\.]+,[0-9]{2})/);
+      if(m) return { kind:"bolletta", amount:C.parseEur(m[1]), label:"Questa bolletta" };
+    }
+    if(/totale spese e commissioni/.test(low)){
+      m=low.match(/totale spese e commissioni[^0-9]*-?\s*([0-9\.]+,[0-9]{2})/);
+      if(m) return { kind:"conto", amount:C.parseEur(m[1]), label:"Le commissioni del conto" };
+    }
+    return null;
+  }
+
+  function impactMessage(up){
+    if(state.income==null || state.income<=0)
+      return "Per calcolare l'impatto, imposta prima le tue <strong>entrate mensili</strong> nella sezione «Le mie spese».";
+    var im=C.impactOnBudget(up.amount, state.income, state.expenses);
+    var head="💡 <strong>Impatto sul tuo budget</strong><br>"+up.label+": <strong>"+eur(up.amount)+" €/mese</strong> ("+pc(im.pct_income)+"% delle tue entrate).";
+    if(up.kind==="mutuo"){
+      var body = im.gap>0
+        ? "Oggi, dopo le spese, ti restano <strong>"+eur(im.saved)+" €</strong>. Con questa rata il saldo mensile diventerebbe <strong>"+eur(im.new_saved)+" €</strong>: per coprirla a entrate invariate dovresti <strong>liberare "+eur(im.gap)+" €/mese</strong> dalle tue spese."
+        : "Oggi ti restano <strong>"+eur(im.saved)+" €</strong>: la rata rientrerebbe nel tuo budget, lasciandoti <strong>"+eur(im.new_saved)+" €</strong> al mese.";
+      return head+"<br>"+body+"<br><span style=\"color:var(--slate500);font-size:13.5px\">Riferimento educativo: molte banche considerano sostenibile una rata entro circa il 30–35% delle entrate. Dove e come intervenire sta a te — io mostro i numeri, non do consigli.</span>";
+    }
+    return head+" In un anno sono <strong>"+eur(im.annual)+" €</strong>. È un costo ricorrente che incide sul tuo budget; come gestirlo sta a te.";
+  }
+
   function botAnswer(text){
     var t=text.toLowerCase();
     if(ADVICE.some(function(r){return r.test(t);})) return GUARD;
+    if(IMPACT.test(t)){
+      if(lastUpload) return impactMessage(lastUpload);
+      return "Carica prima un documento (es. una proposta di mutuo) con «Carica il tuo», poi ti dico che impatto ha sul tuo budget.";
+    }
     var hit=(D.glossary||[]).find(function(e){ return e.aliases.some(function(a){ return t.indexOf(a)>=0; }); });
     if(hit) return "<strong>"+hit.term+"</strong> — "+hit.definizione+" <em>Esempio:</em> "+hit.esempio;
     return "Non ho trovato questa parola nel documento. Prova a scrivermi il termine esatto che vedi (es. «spread», «canone», «TAEG») e te lo spiego subito.";
@@ -267,11 +305,24 @@
     r.onload=function(){
       var low=String(r.result||"").toLowerCase();
       pushMsg("me","📎 Ho caricato «"+name+"»");
+      // 1) spiegazione delle voci riconosciute
       var found=(D.glossary||[]).filter(function(e){ return e.aliases.some(function(a){ return low.indexOf(a)>=0; }); });
-      if(!found.length){ pushMsg("bot","Ho letto il documento ma non ho riconosciuto voci note. Scrivimi una parola che vedi e te la spiego."); return; }
-      pushMsg("bot","Ho letto «"+name+"». Ecco le voci che ho riconosciuto e cosa significano:<ul style=\"margin:8px 0 0;padding-left:18px\">"+
-        found.map(function(e){ return "<li style=\"margin-bottom:6px\"><strong>"+e.term+"</strong>: "+e.definizione+"</li>"; }).join("")+
-        "</ul>Chiedimi pure di una voce specifica per un esempio con numeri.");
+      if(found.length){
+        pushMsg("bot","Ho letto «"+name+"». Ecco le voci che ho riconosciuto e cosa significano:<ul style=\"margin:8px 0 0;padding-left:18px\">"+
+          found.map(function(e){ return "<li style=\"margin-bottom:6px\"><strong>"+e.term+"</strong>: "+e.definizione+"</li>"; }).join("")+
+          "</ul>Chiedimi pure di una voce specifica per un esempio con numeri.");
+      } else {
+        pushMsg("bot","Ho letto il documento ma non ho riconosciuto voci note. Scrivimi una parola che vedi e te la spiego.");
+      }
+      // 2) impatto sul budget (se individuo un importo ricorrente)
+      lastUpload = detectUpload(low);
+      if(lastUpload && lastUpload.amount){
+        if(state.income!=null && state.income>0){
+          setTimeout(function(){ pushMsg("bot", impactMessage(lastUpload)); }, 350);
+        } else {
+          setTimeout(function(){ pushMsg("bot","Vuoi sapere che <strong>impatto</strong> ha sul tuo budget? Imposta prima le tue entrate in «Le mie spese», poi chiedimi «che impatto ha sul mio budget?»."); }, 350);
+        }
+      }
     };
     r.readAsText(f);
   }

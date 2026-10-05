@@ -56,6 +56,23 @@ I documenti di esempio da caricare sono in `app/assets/esempi/`.
 
 ---
 
+## TC3 — Impatto di un documento sul budget (chat)
+
+**Obiettivo:** verificare che, caricando un documento con un costo ricorrente, la chat ne
+mostri l'impatto sul budget (educativo, senza consigli).
+
+| # | Passo | Risultato atteso |
+|---|-------|------------------|
+| 1 | Dashboard → **Prova con dati di esempio** (imposta entrate 1.450 €) | Budget popolato |
+| 2 | **Capire i documenti** → **Carica il tuo** → `mutuo-esempio.txt` | Spiega le voci, poi aggiunge un messaggio **"💡 Impatto sul tuo budget"** |
+| 3 | Leggi il messaggio di impatto | *La rata (548 €/mese) è il 37,8% delle entrate; oggi restano 60 €; mancano **488 €/mese** da liberare.* Con nota educativa (rata sostenibile ~30-35%) e "la scelta sta a te" |
+| 4 | Scrivi `quanto devo risparmiare per permettermi il mutuo?` | Ripropone l'analisi d'impatto (stessi numeri) |
+| 5 | Scrivi `mi conviene?` | **Guardrail**: nessun consiglio |
+
+**Esito positivo:** l'impatto è calcolato sui numeri reali del budget; nessuna raccomandazione.
+
+---
+
 ## Note
 - I dati restano nel browser (localStorage). Per ripartire da zero: pulsante **Esci**, oppure
   svuota i dati del sito dal browser.

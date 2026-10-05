@@ -117,6 +117,27 @@
     return a;
   }
 
+  /* Converte un importo scritto all'italiana ("1.450,00") in numero */
+  function parseEur(s) {
+    if (s == null) return null;
+    var v = ("" + s).replace(/\./g, "").replace(",", ".");
+    var n = parseFloat(v);
+    return isNaN(n) ? null : round2(n);
+  }
+
+  /* Impatto di un costo mensile sul budget corrente (educativo, non un consiglio) */
+  function impactOnBudget(monthly, income, expenses) {
+    var b = budgetBreakdown(income || 0, expenses || []);
+    return {
+      monthly: round2(monthly),
+      pct_income: pct(monthly, income),
+      saved: b.saved,                       // quanto resta oggi
+      new_saved: round2(b.saved - monthly), // quanto resterebbe aggiungendo il costo
+      gap: round2(monthly - b.saved),       // quanto andrebbe liberato per coprirlo
+      annual: round2(monthly * 12)
+    };
+  }
+
   function eurIt(x) {
     var neg = x < 0; x = Math.abs(x);
     var p = x.toFixed(2).split(".");
@@ -127,6 +148,7 @@
 
   global.MMCalc = {
     budgetBreakdown: budgetBreakdown, rule503020: rule503020, buildAlerts: buildAlerts,
+    parseEur: parseEur, impactOnBudget: impactOnBudget,
     eur: eurIt, pc: pcIt, round2: round2, pct: pct
   };
 })(window);
