@@ -360,24 +360,13 @@
     r.onload=function(){
       var raw=String(r.result||""); var low=raw.toLowerCase();
       lastDocText=raw;                                   // contesto per la chat (anche LLM)
+      lastUpload=detectUpload(low);                      // pronto per la domanda sull'impatto
+      // Conferma soltanto: le risposte arrivano quando sei TU a chiedere.
       pushMsg("me","📎 Ho caricato «"+name+"»");
       history.push({ role:"user", content:"[Ho caricato il documento: "+name+"]\n"+raw.slice(0,3000) });
-      // 1) spiegazione delle voci riconosciute
-      var found=(D.glossary||[]).filter(function(e){ return e.aliases.some(function(a){ return low.indexOf(a)>=0; }); });
-      var rec = found.length
-        ? "Ho letto «"+name+"». Ecco le voci che ho riconosciuto e cosa significano:<ul style=\"margin:8px 0 0;padding-left:18px\">"+
-          found.map(function(e){ return "<li style=\"margin-bottom:6px\"><strong>"+e.term+"</strong>: "+e.definizione+"</li>"; }).join("")+
-          "</ul>Chiedimi pure di una voce specifica per un esempio con numeri."
-        : "Ho letto il documento ma non ho riconosciuto voci note. Scrivimi una parola che vedi e te la spiego.";
-      pushMsg("bot", rec); history.push({ role:"assistant", content: stripTags(rec) });
-      // 2) impatto sul budget (se individuo un importo ricorrente)
-      lastUpload = detectUpload(low);
-      if(lastUpload && lastUpload.amount){
-        var imp = (state.income!=null && state.income>0)
-          ? impactMessage(lastUpload)
-          : "Vuoi sapere che <strong>impatto</strong> ha sul tuo budget? Imposta prima le tue entrate in «Le mie spese», poi chiedimi «che impatto ha sul mio budget?».";
-        setTimeout(function(){ pushMsg("bot", imp); history.push({ role:"assistant", content: stripTags(imp) }); }, 350);
-      }
+      var invite="Ho ricevuto «"+name+"». Chiedimi pure cosa vuoi capire — ad esempio «cosa vuol dire TAEG?»"+
+        ((lastUpload && lastUpload.amount) ? " oppure «che impatto ha sul mio budget?»" : "")+".";
+      pushMsg("bot", invite); history.push({ role:"assistant", content: stripTags(invite) });
     };
     r.readAsText(f);
   }
