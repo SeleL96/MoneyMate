@@ -1,6 +1,6 @@
-# Struttura agentica di Bussola
+# Struttura agentica di MoneyMate
 
-Questa cartella documenta **come Bussola usa Claude in modo agentico**, seguendo le best
+Questa cartella documenta **come MoneyMate usa Claude in modo agentico**, seguendo le best
 practice ufficiali: skill con *progressive disclosure*, subagent a contesto isolato, hook
 deterministici come guardrail, routing dei modelli per efficienza di token.
 

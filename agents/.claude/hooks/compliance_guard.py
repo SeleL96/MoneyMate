@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-compliance_guard.py — Hook UserPromptSubmit per Bussola.
+compliance_guard.py — Hook UserPromptSubmit per MoneyMate.
 
 Vincolo del Tema 02: VIETATO fornire raccomandazioni di investimento, consulenza
 finanziaria personalizzata o indicazioni su cosa comprare/vendere/scegliere.
@@ -31,7 +31,7 @@ ADVICE_PATTERNS = [
 ]
 
 GUARD_MESSAGE = (
-    "[GUARDRAIL COMPLIANCE — Bussola]\n"
+    "[GUARDRAIL COMPLIANCE — MoneyMate]\n"
     "La richiesta dell'utente sembra chiedere un CONSIGLIO finanziario personalizzato "
     "(cosa comprare/vendere/scegliere o se qualcosa 'conviene').\n"
     "REGOLA NON NEGOZIABILE: non fornire raccomandazioni ne' valutazioni di convenienza.\n"

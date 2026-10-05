@@ -1,4 +1,4 @@
-# Bussola — Memoria di progetto
+# MoneyMate — Memoria di progetto
 
 ## Snapshot
 Dashboard di **educazione finanziaria** (non consulenza) per utenti con bassa alfabetizzazione

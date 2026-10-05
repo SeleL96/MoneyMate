@@ -1,0 +1,2 @@
+# Dipendenze di sviluppo (il motore core/ usa solo la standard library)
+pytest>=8.0

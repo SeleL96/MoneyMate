@@ -1,6 +1,6 @@
 ---
 name: comprehension-check
-description: Genera un micro-quiz adattivo per misurare la comprensione dell'utente prima e dopo l'uso di Bussola, valuta le risposte e adatta la difficoltà. Fornisce la metrica di miglioramento richiesta dal tema. Usare per il test pre/post o per rinforzare un concetto.
+description: Genera un micro-quiz adattivo per misurare la comprensione dell'utente prima e dopo l'uso di MoneyMate, valuta le risposte e adatta la difficoltà. Fornisce la metrica di miglioramento richiesta dal tema. Usare per il test pre/post o per rinforzare un concetto.
 ---
 
 # comprehension-check

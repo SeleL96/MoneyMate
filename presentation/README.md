@@ -1,6 +1,6 @@
 # Presentazione
 
-Qui va la **presentazione finale in HTML** della dashboard Bussola, seguendo le brand guidelines
+Qui va la **presentazione finale in HTML** della dashboard MoneyMate, seguendo le brand guidelines
 Accenture (palette viola `#A100FF` su fondo scuro).
 
 Contenuti previsti:

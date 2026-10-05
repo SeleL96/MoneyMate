@@ -14,7 +14,7 @@ investimento o indicazioni su cosa comprare/vendere/scegliere**.
    l'agente risponde educando (spiega concetti e numeri) invece di consigliare.
 
 ## Perché è importante per la demo
-Trasforma un vincolo del tema in una **feature architetturale**: Bussola *non può* violare la
+Trasforma un vincolo del tema in una **feature architetturale**: MoneyMate *non può* violare la
 regola, perché il guardrail è deterministico e indipendente dall'LLM.
 *"Hooks turn vibes into rules."*
 
