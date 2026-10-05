@@ -1,0 +1,23 @@
+================================================================
+BANCA ESEMPIO S.p.A. — ESTRATTO CONTO CORRENTE
+================================================================
+Intestatario: Giulia R.
+IBAN: IT00 X000 0000 0000 0000 0000 000
+Periodo: 01/10/2026 - 31/10/2026
+Saldo iniziale: 1.240,00 €
+Saldo finale: 1.305,41 €
+
+----------------------------------------------------------------
+MOVIMENTI E SPESE
+----------------------------------------------------------------
+01/10  Canone mensile conto................... -2,00 €
+08/10  Commissione prelievo ATM altra banca... -2,50 €
+15/10  Commissione bonifico (sportello)....... -1,00 €
+31/10  Imposta di bollo....................... -4,34 €
+----------------------------------------------------------------
+TOTALE SPESE E COMMISSIONI DEL MESE........... -9,84 €
+----------------------------------------------------------------
+
+Per il dettaglio delle condizioni consulta il Foglio
+Informativo del conto.
+================================================================

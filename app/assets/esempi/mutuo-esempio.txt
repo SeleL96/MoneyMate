@@ -1,0 +1,22 @@
+================================================================
+BANCA ESEMPIO S.p.A. — PROPOSTA DI MUTUO CASA
+================================================================
+Richiedente: Giulia R.
+Importo richiesto: 120.000 €
+Durata: 25 anni (300 rate)
+Tipo tasso: variabile
+
+----------------------------------------------------------------
+CONDIZIONI ECONOMICHE
+----------------------------------------------------------------
+TAN (tasso annuo nominale)............ 3,10 %
+Indice Euribor 3M..................... 1,60 %
+Spread (margine banca)................ 1,50 %
+TAEG (costo totale annuo)............. 3,82 %
+Rata mensile stimata.................. 548,00 €
+Commissione di istruttoria............ 350,00 € (una tantum)
+----------------------------------------------------------------
+
+Documento informativo precontrattuale. I valori possono
+variare in base all'andamento dell'indice Euribor.
+================================================================
