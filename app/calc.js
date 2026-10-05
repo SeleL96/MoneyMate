@@ -52,24 +52,67 @@
     };
   }
 
-  /* Alert deterministici dai dati correnti (descrivono, non prescrivono) */
-  function buildAlerts(b, rule) {
-    var a = [];
+  /* Specchio di core.finance_math.month_over_month_delta */
+  function monthDelta(current, previous) {
+    var d = round2(current - previous);
+    return { current: round2(current), previous: round2(previous), delta_abs: d,
+      delta_pct: previous ? pct(d, previous) : 0.0, increased: d > 0 };
+  }
+
+  /* Specchio di core.finance_math.detect_recurring */
+  function detectRecurring(transactions) {
+    var seen = {}, amountOf = {};
+    (transactions || []).forEach(function (t) {
+      var k = t.desc.trim().toLowerCase() + "|" + round2(t.amount);
+      (seen[k] = seen[k] || {})[t.month] = true;
+      amountOf[k] = round2(t.amount);
+    });
+    var items = Object.keys(seen).filter(function (k) { return Object.keys(seen[k]).length >= 2; })
+      .map(function (k) { return { desc: k.split("|")[0], amount: amountOf[k] }; });
+    items.sort(function (a, b) { return b.amount - a.amount; });
+    var monthly = round2(items.reduce(function (s, i) { return s + i.amount; }, 0));
+    return { items: items, count: items.length, monthly_total: monthly, annual_total: round2(monthly * 12) };
+  }
+
+  /* Alert intelligenti: descrivono l'andamento, non prescrivono. opts={previous,transactions} */
+  function buildAlerts(b, rule, opts) {
+    opts = opts || {}; var a = [];
+    var prev = opts.previous || {};
+
+    // 1) Andamento mese su mese: categorie in forte aumento (>=30%)
+    b.by_category.forEach(function (c) {
+      if (prev[c.key] != null) {
+        var d = monthDelta(c.amount, prev[c.key]);
+        if (d.increased && d.delta_pct >= 30) {
+          a.push({ level: "warn", icon: "trending", title: "Spesa in aumento",
+            message: "<strong>" + c.label + "</strong> è a <strong>" + eurIt(c.amount) +
+              " €</strong>: <strong>+" + pcIt(d.delta_pct) + "%</strong> rispetto ai " +
+              eurIt(d.previous) + " € del mese scorso." });
+        }
+      }
+    });
+
+    // 2) Addebiti ricorrenti (abbonamenti)
+    var rec = detectRecurring(opts.transactions);
+    if (rec.count >= 1) {
+      a.push({ level: "info", icon: "repeat", title: "Addebiti che si ripetono",
+        message: "<strong>" + rec.count + " pagamenti uguali ogni mese</strong> (" +
+          rec.items.map(function (i) { return eurIt(i.amount); }).join(" + ") +
+          " €): possibili abbonamenti. In un anno: <strong>" + eurIt(rec.annual_total) + " €</strong>." });
+    }
+
+    // 3) Extra sopra il riferimento
     if (rule.extra.pct > rule.extra.target) {
-      a.push({ level: "warn", icon: "trending", title: "Extra sopra il riferimento",
+      a.push({ level: "warn", icon: "info", title: "Extra sopra il riferimento",
         message: "Le spese <strong>extra</strong> pesano il <strong>" + pcIt(rule.extra.pct) +
           "%</strong> delle entrate: il riferimento 50/30/20 indica il 30%." });
     }
+
+    // 4) Risparmio basso
     if (b.income > 0 && rule.saved.pct < rule.saved.target) {
       a.push({ level: "info", icon: "coins", title: "Risparmio del mese",
         message: "Questo mese metti da parte il <strong>" + pcIt(rule.saved.pct) +
           "%</strong> delle entrate (riferimento: 20%)." });
-    }
-    var top = b.by_category[0];
-    if (top && top.pct_income >= 35) {
-      a.push({ level: "info", icon: "info", title: "Categoria più pesante",
-        message: "<strong>" + top.label + "</strong> da sola vale il <strong>" +
-          pcIt(top.pct_income) + "%</strong> delle tue entrate." });
     }
     return a;
   }

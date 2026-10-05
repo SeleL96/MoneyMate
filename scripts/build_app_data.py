@@ -73,11 +73,14 @@ def build() -> dict:
         for k, v in CATEGORIES.items()
     ]
 
-    # Seed dimostrativo: l'utente puo' caricarlo per vedere la dashboard popolata
+    # Seed dimostrativo: l'utente puo' caricarlo per vedere la dashboard popolata.
+    # Include mese precedente e movimenti per far scattare gli alert di andamento.
     demo_seed = {
         "month": data.MONTH,
         "income": data.INCOME,
         "expenses": [dict(e) for e in data.EXPENSES],
+        "previous": dict(data.PREVIOUS),
+        "transactions": [dict(t) for t in data.TRANSACTIONS],
     }
 
     return {

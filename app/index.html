@@ -113,13 +113,14 @@
           <button class="doc-pill" aria-pressed="true" onclick="MM.loadDoc('mutuo', this)">Proposta di mutuo</button>
           <button class="doc-pill" aria-pressed="false" onclick="MM.loadDoc('bolletta', this)">Bolletta</button>
           <button class="doc-pill" aria-pressed="false" onclick="MM.loadDoc('conto', this)">Estratto conto</button>
-          <button class="btn btn--secondary btn--sm" onclick="alert('Nel prototipo usiamo documenti di esempio. In sviluppo qui si caricherà un PDF/foto reale.')"><svg class="icon" viewBox="0 0 24 24"><path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 6"/></svg>Carica il tuo</button>
+          <button class="btn btn--secondary btn--sm" onclick="document.getElementById('fileup').click()"><svg class="icon" viewBox="0 0 24 24"><path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 6"/></svg>Carica il tuo</button>
+          <input type="file" id="fileup" accept=".txt,.csv,.pdf" style="display:none" onchange="MM.onFile(this)" />
         </div>
         <div class="chat">
           <div class="thread" id="thread" aria-live="polite" aria-label="Conversazione"></div>
           <div class="suggest" id="suggest"></div>
           <form class="composer" onsubmit="event.preventDefault(); MM.sendMsg();">
-            <button type="button" class="chip-ic" style="width:44px;height:44px" aria-label="Allega" onclick="alert('Caricamento file disponibile in fase di sviluppo.')"><svg class="icon" viewBox="0 0 24 24"><path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 6"/></svg></button>
+            <button type="button" class="chip-ic" style="width:44px;height:44px" aria-label="Allega" onclick="document.getElementById('fileup').click()"><svg class="icon" viewBox="0 0 24 24"><path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 6"/></svg></button>
             <input type="text" id="chatInput" placeholder="Scrivi una parola o una domanda… es. «cosa vuol dire TAEG?»" aria-label="La tua domanda" autocomplete="off" />
             <button type="submit" class="btn btn--primary" aria-label="Invia"><svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>Invia</button>
           </form>

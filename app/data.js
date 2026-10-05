@@ -200,6 +200,46 @@ window.MM_DATA = {
         "category": "altro",
         "amount": 40.0
       }
+    ],
+    "previous": {
+      "ristoranti": 124.0
+    },
+    "transactions": [
+      {
+        "desc": "Streaming TV",
+        "amount": 12.99,
+        "month": "2026-09"
+      },
+      {
+        "desc": "Streaming TV",
+        "amount": 12.99,
+        "month": "2026-10"
+      },
+      {
+        "desc": "Palestra",
+        "amount": 9.99,
+        "month": "2026-09"
+      },
+      {
+        "desc": "Palestra",
+        "amount": 9.99,
+        "month": "2026-10"
+      },
+      {
+        "desc": "Musica",
+        "amount": 4.99,
+        "month": "2026-09"
+      },
+      {
+        "desc": "Musica",
+        "amount": 4.99,
+        "month": "2026-10"
+      },
+      {
+        "desc": "Supermercato",
+        "amount": 42.1,
+        "month": "2026-10"
+      }
     ]
   },
   "_preview": {

@@ -37,7 +37,7 @@
   };
 
   /* ---------- stato ---------- */
-  var DEFAULT = { user:null, income:null, expenses:[] };
+  var DEFAULT = { user:null, income:null, expenses:[], previous:{}, transactions:[] };
   var state = load();
   var level = "simple";
   var currentDoc = "mutuo";
@@ -85,7 +85,7 @@
     }
     var b = C.budgetBreakdown(state.income, state.expenses);
     var rule = C.rule503020(b);
-    var alerts = C.buildAlerts(b, rule);
+    var alerts = C.buildAlerts(b, rule, { previous: state.previous, transactions: state.transactions });
     cur.b = b; cur.rule = rule;
 
     var html = '<div class="hero"><div class="m">'+monthLabel()+' · Riepilogo</div><h2>Ogni spesa ha senso con MoneyMate</h2></div>';
@@ -99,11 +99,29 @@
         '<button class="btn btn--secondary btn--sm" style="margin-top:12px" onclick="MM.explain(\''+c.key+'\')">'+svg(IC.chat)+'Spiega</button></div>';
     }).join("")+'</div>';
 
-    // categorie
+    // --- blocco ALERT (intelligenti, in alto) ---
+    var alertsHtml = "";
+    if(alerts.length){
+      alertsHtml = '<div class="alerts" aria-live="polite">'+alerts.map(function(a){
+        return '<div class="alert '+a.level+'"><span class="chip-ic">'+svg(IC[a.icon]||IC.info)+'</span><span class="t"><span class="lab">'+a.title+'</span>'+a.message+'</span></div>';
+      }).join("")+'</div>';
+    }
+
+    // --- blocco 50/30/20 ---
+    var ruleHtml = '<h2 class="section-h">Un modo semplice per leggere il budget: 50 / 30 / 20</h2>'+
+      '<p class="caption">Uno schema di riferimento (non una regola): metà alle cose necessarie, un terzo agli extra, il resto da parte.</p>'+
+      '<div class="card"><div class="rule">'+
+      [{l:"Necessario",d:rule.needs,c:"var(--verde)"},{l:"Extra",d:rule.extra,c:"var(--giallo)"},{l:"Da parte",d:rule.saved,c:"var(--info)"}].map(function(x){
+        return '<div class="b"><div class="big" style="color:'+x.c+'">'+pc(x.d.pct)+'%</div><div class="cmp">'+x.l+'<br><span style="color:var(--slate500)">riferimento: '+x.d.target+'%</span></div></div>';
+      }).join("")+'</div>'+
+      '<button class="btn btn--secondary btn--sm" style="margin-top:16px" onclick="MM.explain(\'rule\')">'+svg(IC.info)+'Spiega questo schema</button></div>';
+
+    // --- blocco CATEGORIE (lista spese) ---
+    var catsHtml;
     if(b.by_category.length){
-      html += '<p class="caption" style="margin-top:22px">Tocca una categoria per capire cosa contiene. Le barre mostrano il peso sulle tue entrate.</p><ul class="cats">';
+      catsHtml = '<p class="caption" style="margin-top:28px">Tocca una categoria per capire cosa contiene. Le barre mostrano il peso sulle tue entrate.</p><ul class="cats">';
       var max = Math.max.apply(null, b.by_category.map(function(c){return c.amount;}));
-      html += b.by_category.map(function(c,i){
+      catsHtml += b.by_category.map(function(c,i){
         var w=Math.round(c.amount/max*100);
         var tag=c.type==="need"?'<span class="tag need">Necessario</span>':'<span class="tag extra">Extra</span>';
         return '<li class="cat" tabindex="0" role="button" aria-label="'+c.label+', '+eur(c.amount)+' euro, '+pc(c.pct_income)+'% delle entrate" '+
@@ -113,28 +131,13 @@
           '<span class="pct">'+pc(c.pct_income)+'% delle tue entrate</span></li>';
       }).join("")+'</ul>';
     } else {
-      html += '<div class="empty" style="margin-top:22px"><div class="big-ic">'+svg(IC.cart)+'</div><h3>Ancora nessuna spesa</h3>'+
+      catsHtml = '<div class="empty" style="margin-top:22px"><div class="big-ic">'+svg(IC.cart)+'</div><h3>Ancora nessuna spesa</h3>'+
         '<p>Aggiungi le tue spese per vedere dove vanno i soldi.</p>'+
         '<div class="actions"><button class="btn btn--primary" onclick="MM.showView(\'spese\')">Vai a Le mie spese</button></div></div>';
     }
 
-    // alert
-    if(alerts.length){
-      html += '<div class="alerts" aria-live="polite">'+alerts.map(function(a){
-        return '<div class="alert '+a.level+'"><span class="chip-ic">'+svg(IC[a.icon]||IC.info)+'</span><span class="t"><span class="lab">'+a.title+'</span>'+a.message+'</span></div>';
-      }).join("")+'</div>';
-    }
-
-    // 50/30/20
-    html += '<h2 class="section-h">Un modo semplice per leggere il budget: 50 / 30 / 20</h2>'+
-      '<p class="caption">Uno schema di riferimento (non una regola): metà alle cose necessarie, un terzo agli extra, il resto da parte.</p>'+
-      '<div class="card"><div class="rule">'+
-      [{l:"Necessario",d:rule.needs,c:"var(--verde)"},{l:"Extra",d:rule.extra,c:"var(--giallo)"},{l:"Da parte",d:rule.saved,c:"var(--info)"}].map(function(x){
-        return '<div class="b"><div class="big" style="color:'+x.c+'">'+pc(x.d.pct)+'%</div><div class="cmp">'+x.l+'<br><span style="color:var(--slate500)">riferimento: '+x.d.target+'%</span></div></div>';
-      }).join("")+'</div>'+
-      '<button class="btn btn--secondary btn--sm" style="margin-top:16px" onclick="MM.explain(\'rule\')">'+svg(IC.info)+'Spiega questo schema</button></div>';
-
-    body.innerHTML = html;
+    // ordine finale: riepilogo → alert → 50/30/20 → lista spese
+    body.innerHTML = html + alertsHtml + ruleHtml + catsHtml;
   }
 
   /* ---------- income / budget setup ---------- */
@@ -181,6 +184,8 @@
   function loadDemo(){
     var seed=D.demo_seed; state.income=seed.income;
     state.expenses=seed.expenses.map(function(e,i){ return { id:Date.now()+i, category:e.category, amount:e.amount, desc:e.desc||"" }; });
+    state.previous = seed.previous || {};
+    state.transactions = seed.transactions || [];
     save(); renderDashboard(); renderExpenseList(); showView("dashboard");
   }
 
@@ -250,6 +255,26 @@
   function pushMsg(who,html){ var th=$("thread"); th.insertAdjacentHTML("beforeend",bubble(who,html)); th.scrollTop=th.scrollHeight; }
   function ask(text){ if(!text||!text.trim())return; pushMsg("me",text.replace(/</g,"&lt;")); setTimeout(function(){ pushMsg("bot",botAnswer(text)); },250); }
   function sendMsg(){ var inp=$("chatInput"); ask(inp.value); inp.value=""; inp.focus(); }
+  function onFile(input){
+    var f = input.files && input.files[0]; if(!f) return; input.value="";
+    var name=f.name;
+    if(!/\.(txt|csv)$/i.test(name) && (f.type||"").indexOf("text")<0){
+      pushMsg("me","📎 "+name);
+      pushMsg("bot","Per ora leggo documenti di testo (.txt). Il supporto per PDF e foto arriva in fase di sviluppo. Intanto scrivimi la voce che non capisci e te la spiego.");
+      return;
+    }
+    var r=new FileReader();
+    r.onload=function(){
+      var low=String(r.result||"").toLowerCase();
+      pushMsg("me","📎 Ho caricato «"+name+"»");
+      var found=(D.glossary||[]).filter(function(e){ return e.aliases.some(function(a){ return low.indexOf(a)>=0; }); });
+      if(!found.length){ pushMsg("bot","Ho letto il documento ma non ho riconosciuto voci note. Scrivimi una parola che vedi e te la spiego."); return; }
+      pushMsg("bot","Ho letto «"+name+"». Ecco le voci che ho riconosciuto e cosa significano:<ul style=\"margin:8px 0 0;padding-left:18px\">"+
+        found.map(function(e){ return "<li style=\"margin-bottom:6px\"><strong>"+e.term+"</strong>: "+e.definizione+"</li>"; }).join("")+
+        "</ul>Chiedimi pure di una voce specifica per un esempio con numeri.");
+    };
+    r.readAsText(f);
+  }
 
   /* ---------- util ---------- */
   function toast(msg){
@@ -268,7 +293,7 @@
     openIncomeModal:openIncomeModal, confirmIncome:confirmIncome, saveIncomeFromField:saveIncomeFromField,
     addExpense:addExpense, deleteExpense:deleteExpense, loadDemo:loadDemo,
     explain:explain, explainCat:explainCat, closeModal:closeModal,
-    loadDoc:loadDoc, ask:ask, sendMsg:sendMsg
+    loadDoc:loadDoc, ask:ask, sendMsg:sendMsg, onFile:onFile
   };
   init();
 })();
