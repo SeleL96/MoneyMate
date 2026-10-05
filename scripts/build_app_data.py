@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from core import finance_math as fm            # noqa: E402
+from core.categories import CATEGORIES         # noqa: E402
 from core.glossary import GLOSSARY             # noqa: E402
 from core.demo import giulia as data           # noqa: E402
 
@@ -66,15 +67,30 @@ def build() -> dict:
         for e in GLOSSARY.values()
     ]
 
+    # Catalogo categorie (single source) per i form di inserimento spese
+    catalog = [
+        {"key": k, "label": v["label"], "icon": v["icon"], "type": v["type"]}
+        for k, v in CATEGORIES.items()
+    ]
+
+    # Seed dimostrativo: l'utente puo' caricarlo per vedere la dashboard popolata
+    demo_seed = {
+        "month": data.MONTH,
+        "income": data.INCOME,
+        "expenses": [dict(e) for e in data.EXPENSES],
+    }
+
     return {
         "brand": {"name": "MoneyMate", "slogan": "Ogni spesa ha senso con MoneyMate"},
-        "month": data.MONTH,
-        "income": budget.income,
-        "summary": {"income": budget.income, "spent": budget.total_spent, "saved": budget.saved},
-        "categories": budget.by_category,
-        "rule": rule,
-        "alerts": alerts,
+        "categories": catalog,
         "glossary": glossary,
+        "demo_seed": demo_seed,
+        # anteprima precalcolata (riferimento/QA): non usata a runtime dall'app
+        "_preview": {
+            "summary": {"income": budget.income, "spent": budget.total_spent, "saved": budget.saved},
+            "rule": rule,
+            "alerts": alerts,
+        },
     }
 
 

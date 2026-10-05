@@ -5,97 +5,48 @@ window.MM_DATA = {
     "name": "MoneyMate",
     "slogan": "Ogni spesa ha senso con MoneyMate"
   },
-  "month": "Ottobre 2026",
-  "income": 1450.0,
-  "summary": {
-    "income": 1450.0,
-    "spent": 1390.0,
-    "saved": 60.0
-  },
   "categories": [
     {
       "key": "casa",
       "label": "Casa e bollette",
       "icon": "home",
-      "type": "need",
-      "amount": 620.0,
-      "pct_income": 42.8
+      "type": "need"
     },
     {
       "key": "alimentari",
       "label": "Spesa alimentare",
       "icon": "cart",
-      "type": "need",
-      "amount": 280.0,
-      "pct_income": 19.3
-    },
-    {
-      "key": "ristoranti",
-      "label": "Ristoranti e bar",
-      "icon": "food",
-      "type": "extra",
-      "amount": 180.0,
-      "pct_income": 12.4
-    },
-    {
-      "key": "svago",
-      "label": "Abbonamenti e svago",
-      "icon": "film",
-      "type": "extra",
-      "amount": 145.0,
-      "pct_income": 10.0
+      "type": "need"
     },
     {
       "key": "trasporti",
       "label": "Trasporti",
       "icon": "bus",
-      "type": "need",
-      "amount": 90.0,
-      "pct_income": 6.2
-    },
-    {
-      "key": "altro",
-      "label": "Altro",
-      "icon": "receipt",
-      "type": "extra",
-      "amount": 40.0,
-      "pct_income": 2.8
+      "type": "need"
     },
     {
       "key": "salute",
       "label": "Salute",
       "icon": "health",
-      "type": "need",
-      "amount": 35.0,
-      "pct_income": 2.4
-    }
-  ],
-  "rule": {
-    "needs": {
-      "pct": 70.7,
-      "target": 50
-    },
-    "extra": {
-      "pct": 25.2,
-      "target": 30
-    },
-    "saved": {
-      "pct": 4.1,
-      "target": 20
-    }
-  },
-  "alerts": [
-    {
-      "level": "warn",
-      "icon": "trending",
-      "title": "Spesa in aumento",
-      "message": "<strong>Ristoranti e bar</strong> è a <strong>180 €</strong>: <strong>+45,2%</strong> rispetto ai 124 € del mese scorso."
+      "type": "need"
     },
     {
-      "level": "info",
-      "icon": "repeat",
-      "title": "Addebiti che si ripetono",
-      "message": "<strong>3 pagamenti uguali ogni mese</strong> (12,99 + 9,99 + 4,99 €): possibili abbonamenti. In un anno: <strong>335,64 €</strong>."
+      "key": "ristoranti",
+      "label": "Ristoranti e bar",
+      "icon": "food",
+      "type": "extra"
+    },
+    {
+      "key": "svago",
+      "label": "Abbonamenti e svago",
+      "icon": "film",
+      "type": "extra"
+    },
+    {
+      "key": "altro",
+      "label": "Altro",
+      "icon": "receipt",
+      "type": "extra"
     }
   ],
   "glossary": [
@@ -216,5 +167,74 @@ window.MM_DATA = {
       "definizione": "Si paga prelevando da sportelli di altre banche. Dai bancomat della tua banca di solito e' gratis.",
       "esempio": "Prelievo ATM altra banca 2,50 €."
     }
-  ]
+  ],
+  "demo_seed": {
+    "month": "Ottobre 2026",
+    "income": 1450.0,
+    "expenses": [
+      {
+        "category": "casa",
+        "amount": 620.0
+      },
+      {
+        "category": "alimentari",
+        "amount": 280.0
+      },
+      {
+        "category": "ristoranti",
+        "amount": 180.0
+      },
+      {
+        "category": "svago",
+        "amount": 145.0
+      },
+      {
+        "category": "trasporti",
+        "amount": 90.0
+      },
+      {
+        "category": "salute",
+        "amount": 35.0
+      },
+      {
+        "category": "altro",
+        "amount": 40.0
+      }
+    ]
+  },
+  "_preview": {
+    "summary": {
+      "income": 1450.0,
+      "spent": 1390.0,
+      "saved": 60.0
+    },
+    "rule": {
+      "needs": {
+        "pct": 70.7,
+        "target": 50
+      },
+      "extra": {
+        "pct": 25.2,
+        "target": 30
+      },
+      "saved": {
+        "pct": 4.1,
+        "target": 20
+      }
+    },
+    "alerts": [
+      {
+        "level": "warn",
+        "icon": "trending",
+        "title": "Spesa in aumento",
+        "message": "<strong>Ristoranti e bar</strong> è a <strong>180 €</strong>: <strong>+45,2%</strong> rispetto ai 124 € del mese scorso."
+      },
+      {
+        "level": "info",
+        "icon": "repeat",
+        "title": "Addebiti che si ripetono",
+        "message": "<strong>3 pagamenti uguali ogni mese</strong> (12,99 + 9,99 + 4,99 €): possibili abbonamenti. In un anno: <strong>335,64 €</strong>."
+      }
+    ]
+  }
 };

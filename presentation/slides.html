@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MoneyMate — Presentazione</title>
+<style>
+  :root{
+    --purple:#A100FF; --purple-light:#BE82FF; --purple-deep:#3B0A66; --fill:#7A00C2;
+    --ink:#0A0014; --bg:#050008; --muted:rgba(255,255,255,.62); --line:rgba(255,255,255,.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:#fff;font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55;overflow:hidden;}
+  .deck{height:100vh;width:100vw;position:relative;}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+    padding:7vh clamp(28px,8vw,130px);opacity:0;transition:opacity .35s ease;}
+  .slide.active{display:flex;opacity:1;}
+  .kicker{display:inline-block;align-self:flex-start;border:1px solid var(--line);background:rgba(255,255,255,.05);
+    border-radius:999px;padding:5px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:var(--muted);margin-bottom:22px;}
+  h1{font-size:clamp(34px,6vw,62px);font-weight:800;letter-spacing:-.02em;margin:0 0 14px;line-height:1.04;}
+  h1 .grad{background:linear-gradient(90deg,var(--purple-light),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  h2{font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-.02em;margin:0 0 20px;}
+  .lead{font-size:clamp(16px,2vw,20px);color:var(--muted);max-width:760px;}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:10px;}
+  .card{border:1px solid var(--line);background:rgba(255,255,255,.03);border-radius:16px;padding:22px 24px;}
+  .card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--purple-light);}
+  ul.b{list-style:none;padding:0;margin:0;}
+  ul.b li{position:relative;padding-left:22px;margin-bottom:10px;color:rgba(255,255,255,.85);font-size:15.5px;}
+  ul.b li::before{content:"›";position:absolute;left:0;color:var(--purple);font-weight:800;}
+  ul.x li::before{content:"×";color:#FF5CA0;}
+  ul.v li::before{content:"✓";color:#49E39B;}
+  .big-quote{font-size:clamp(24px,3.4vw,40px);font-weight:800;letter-spacing:-.02em;max-width:900px;line-height:1.18;}
+  .big-quote .grad{background:linear-gradient(90deg,var(--purple-light),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+  .pill{border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:999px;padding:8px 15px;font-size:13.5px;color:rgba(255,255,255,.85);}
+  .flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px;font-size:14px;}
+  .flow .node{border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:12px;padding:12px 16px;font-weight:700;}
+  .flow .arr{color:var(--purple);font-weight:800;}
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:16px;}
+  .ba .c{padding:18px 20px;} .ba .before{background:rgba(255,255,255,.03);border-right:1px solid var(--line);}
+  .ba .h{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:8px;}
+  .ba code{font-family:ui-monospace,Consolas,monospace;color:var(--purple-light);font-size:14px;}
+  .stat{display:flex;gap:40px;margin-top:20px;flex-wrap:wrap;}
+  .stat .n{font-size:clamp(34px,5vw,54px);font-weight:800;letter-spacing:-.02em;}
+  .stat .l{font-size:13px;color:var(--muted);}
+  .brandrow{display:flex;align-items:center;gap:14px;margin-bottom:28px;}
+  .brandrow .tile{width:52px;height:52px;border-radius:15px;background:linear-gradient(145deg,var(--purple),var(--fill));position:relative;flex:none;}
+  .brandrow .tile .bub{position:absolute;left:11px;top:12px;width:30px;height:21px;background:#fff;border-radius:7px;}
+  .brandrow .tile .tail{position:absolute;left:15px;top:30px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid #fff;}
+  .brandrow .tile .e{position:absolute;left:21px;top:13px;color:var(--fill);font-weight:800;font-size:13px;}
+  .brandrow .nm{font-size:22px;font-weight:800;} .brandrow .nm .mate{color:var(--purple-light);}
+  /* nav */
+  .nav{position:fixed;bottom:22px;right:28px;display:flex;align-items:center;gap:14px;z-index:20;}
+  .nav button{background:rgba(255,255,255,.06);border:1px solid var(--line);color:#fff;width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px;}
+  .nav button:hover{background:var(--purple);border-color:var(--purple);}
+  .counter{position:fixed;bottom:30px;left:28px;font-size:12px;color:var(--muted);letter-spacing:.1em;z-index:20;}
+  .dots{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:20;}
+  .dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.22);cursor:pointer;display:block;}
+  .dots i.on{background:var(--purple);width:22px;border-radius:6px;}
+  .progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--purple-light),var(--purple));z-index:30;transition:width .35s;}
+  .foot{position:fixed;top:20px;right:28px;font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,.3);z-index:20;}
+  @media (max-width:760px){ .cols,.ba{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="foot">Hagenthon › Accenture · Tema 02</div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide active">
+    <div class="brandrow">
+      <span class="tile"><span class="bub"></span><span class="e">€</span><span class="tail"></span></span>
+      <span class="nm">Money<span class="mate">Mate</span></span>
+    </div>
+    <span class="kicker">Inclusione Finanziaria · Tema 02</span>
+    <h1>Ogni spesa ha senso<br>con <span class="grad">MoneyMate</span></h1>
+    <p class="lead">Una dashboard che <strong>spiega</strong> le finanze quotidiane in parole semplici — budget, spese e documenti — a chi parte da zero di educazione finanziaria. Spiega, non consiglia.</p>
+    <div class="pills"><span class="pill">Agentic coding</span><span class="pill">Skills + Hook + Subagent</span><span class="pill">Accessibile (WCAG)</span></div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <span class="kicker">Deliverable 01 · User Difficulty Statement</span>
+    <h2>Chi aiutiamo: Giulia</h2>
+    <p class="lead">34 anni, lavoratrice part-time, nessuna educazione finanziaria. Si blocca in due momenti precisi.</p>
+    <div class="cols">
+      <div class="card"><h3>A fine mese</h3><p style="margin:0;color:rgba(255,255,255,.85)">Non capisce dove siano finiti i soldi. Non sa quanto spende per cosa, né quanto riesce a mettere da parte.</p></div>
+      <div class="card"><h3>Davanti ai documenti</h3><p style="margin:0;color:rgba(255,255,255,.85)">Estratto conto, bolletta e proposta di mutuo pieni di sigle — TAN, TAEG, spread, canone — che non capisce e che la mettono in soggezione.</p></div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <span class="kicker">La soluzione</span>
+    <h2>Cosa fa MoneyMate</h2>
+    <div class="cols">
+      <div class="card"><h3>📊 Budget mensile</h3><ul class="b"><li>Entrate e spese per categoria</li><li>Vista in percentuale e schema 50/30/20</li><li>Alert proattivi: "stai spendendo di più su…"</li></ul></div>
+      <div class="card"><h3>📄 Capire i documenti</h3><ul class="b"><li>Chat: carichi un documento e chiedi</li><li>Traduce sigle e voci in parole semplici</li><li>Evidenzia costi e commissioni</li></ul></div>
+    </div>
+    <div class="pills"><span class="pill">💬 "Spiega questo numero" su ogni cifra</span><span class="pill">🎚️ Spiegazioni Semplici / Dettagliate</span></div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <span class="kicker">Principio di design</span>
+    <p class="big-quote">La matematica non è mai <span class="grad">allucinata.</span></p>
+    <p class="lead" style="margin-top:20px">I calcoli li fa un motore deterministico (<code style="color:var(--purple-light)">core/</code>, Python, testato). L'LLM riceve i numeri già calcolati e si limita a <strong>spiegarli</strong> in linguaggio semplice. Separazione netta → affidabilità e token bassi.</p>
+    <div class="flow"><span class="node">Dati utente</span><span class="arr">→</span><span class="node">core/ calcola</span><span class="arr">→</span><span class="node">LLM spiega</span><span class="arr">→</span><span class="node">Utente capisce</span></div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <span class="kicker">Architettura agentica</span>
+    <h2>Skills, subagent, hook, routing</h2>
+    <div class="cols">
+      <div class="card"><h3>Capability (skills)</h3><ul class="b"><li>budget-analyzer · spending-alerts</li><li>document-decoder · jargon-explainer</li><li>expense-categorizer · comprehension-check</li></ul></div>
+      <div class="card"><h3>Efficienza (best practice Claude)</h3><ul class="b"><li>Progressive disclosure: carica solo ciò che serve</li><li>Subagent isolato per documenti lunghi</li><li>Haiku per classificazione, Sonnet per spiegare</li></ul></div>
+    </div>
+    <div class="pills"><span class="pill">core/ = single source dei calcoli</span><span class="pill">clean architecture, zero duplicazioni</span></div>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide">
+    <span class="kicker">Il vincolo del tema diventa feature</span>
+    <h2>Guardrail anti-consigli (hook)</h2>
+    <p class="lead">Il tema vieta raccomandazioni e consulenza. Un <strong>hook deterministico</strong> (non AI) intercetta le richieste di consiglio e reindirizza all'educazione: MoneyMate <em>non può</em> violare la regola, per costruzione.</p>
+    <div class="ba">
+      <div class="c before"><div class="h">Utente chiede</div><code>«Mi conviene questo mutuo?»</code></div>
+      <div class="c"><div class="h">MoneyMate risponde</div><div style="color:rgba(255,255,255,.9)">«Non posso dirti se conviene — sarebbe un consiglio. Ma ti spiego TAN, TAEG e rata così decidi tu.»</div></div>
+    </div>
+    <p class="lead" style="margin-top:14px;font-size:15px">"Hooks turn vibes into rules."</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide">
+    <span class="kicker">Deliverable 02 · Before / After</span>
+    <h2>Da incomprensibile a chiaro</h2>
+    <div class="ba">
+      <div class="c before"><div class="h">Prima (sul documento)</div><code>TAEG 3,82% — spread 1,50% su Euribor 3M — commissione istruttoria 350 €</code></div>
+      <div class="c"><div class="h">Dopo (MoneyMate)</div><div style="color:rgba(255,255,255,.9)">Il costo totale reale è il <strong>3,82%</strong> l'anno. Lo <strong>spread</strong> è il guadagno fisso della banca; l'<strong>Euribor</strong> può salire o scendere; i <strong>350 €</strong> si pagano una volta sola.</div></div>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide">
+    <span class="kicker">Miglioramento misurabile</span>
+    <h2>Quiz pre / post</h2>
+    <p class="lead">La skill <code style="color:var(--purple-light)">comprehension-check</code> fa la stessa domanda prima e dopo. La differenza di punteggio è la prova che l'utente ha capito.</p>
+    <div class="stat">
+      <div><div class="n" style="color:#FF5CA0">2/5</div><div class="l">Prima · "quanto ti costano le commissioni?"</div></div>
+      <div><div class="n" style="color:#49E39B">5/5</div><div class="l">Dopo · stessa domanda</div></div>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide">
+    <span class="kicker">Deliverable 03 · Risk & Clarity Note</span>
+    <h2>Semplificare senza tradire</h2>
+    <div class="cols">
+      <div class="card"><h3>Cosa semplifichiamo</h3><ul class="b"><li>Il linguaggio</li><li>Le sigle e il gergo</li></ul></div>
+      <div class="card"><h3>Cosa NON alteriamo</h3><ul class="v"><li>I numeri: calcolati da core/, mostrati esatti</li><li>Il significato delle informazioni originali</li><li>Nessun consiglio (hook di compliance)</li></ul></div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide">
+    <span class="kicker">Accessibilità & UX</span>
+    <h2>Pensata per chi parte da zero</h2>
+    <div class="cols">
+      <div class="card"><h3>Accessibile</h3><ul class="b"><li>Alto contrasto, testo grande, focus visibile</li><li>Navigazione da tastiera, label screen-reader</li><li>Linguaggio semplice, icone + testo</li></ul></div>
+      <div class="card"><h3>Usabile</h3><ul class="b"><li>Login → dashboard → spese → documenti</li><li>Imposti il budget, inserisci e monitori le spese</li><li>"Spiega questo numero" ovunque</li></ul></div>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide">
+    <span class="kicker">Cosa evitiamo (regole del tema)</span>
+    <h2>I paletti rispettati</h2>
+    <ul class="b x">
+      <li>Nessun chatbot generico — c'è una capability software concreta (motore + skill)</li>
+      <li>Nessun consiglio finanziario — garantito dall'hook</li>
+      <li>Nessuna semplificazione che cambia il significato</li>
+      <li>Nessuna demo scollegata: tutto su un processo reale (budget, estratto conto, bolletta, mutuo)</li>
+    </ul>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide">
+    <div class="brandrow">
+      <span class="tile"><span class="bub"></span><span class="e">€</span><span class="tail"></span></span>
+      <span class="nm">Money<span class="mate">Mate</span></span>
+    </div>
+    <h1>Grazie</h1>
+    <p class="lead">Ogni spesa ha senso con MoneyMate.<br>github.com/SeleL96/dashboard-finanziaria</p>
+  </section>
+
+</div>
+
+<div class="counter" id="counter">01 / 12</div>
+<div class="dots" id="dots"></div>
+<div class="nav"><button id="prev" aria-label="Precedente">‹</button><button id="next" aria-label="Successiva">›</button></div>
+
+<script>
+  var slides=[].slice.call(document.querySelectorAll(".slide"));
+  var i=0, n=slides.length;
+  var dots=document.getElementById("dots");
+  slides.forEach(function(_,k){ var d=document.createElement("i"); d.onclick=function(){go(k);}; dots.appendChild(d); });
+  function go(k){
+    i=Math.max(0,Math.min(n-1,k));
+    slides.forEach(function(s,x){ s.classList.toggle("active",x===i); });
+    [].forEach.call(dots.children,function(d,x){ d.classList.toggle("on",x===i); });
+    document.getElementById("counter").textContent=("0"+(i+1)).slice(-2)+" / "+("0"+n).slice(-2);
+    document.getElementById("progress").style.width=((i+1)/n*100)+"%";
+  }
+  document.getElementById("next").onclick=function(){go(i+1);};
+  document.getElementById("prev").onclick=function(){go(i-1);};
+  document.addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight"||e.key===" "||e.key==="PageDown"){go(i+1);}
+    if(e.key==="ArrowLeft"||e.key==="PageUp"){go(i-1);}
+    if(e.key==="Home"){go(0);} if(e.key==="End"){go(n-1);}
+  });
+  go(0);
+</script>
+</body>
+</html>

@@ -24,6 +24,16 @@ Si blocca in due momenti:
   evidenziando costi e commissioni.
 - 💬 **"Spiega questo numero"**: ogni cifra è cliccabile e spiegata passo-passo.
 
+## Come si usa (app)
+
+1. **Login** (dimostrativo: qualsiasi nome utente, la password non viene verificata).
+2. Alla prima apertura la dashboard chiede di **impostare il budget** (entrate mensili) —
+   oppure "Prova con dati di esempio".
+3. **Le mie spese**: inserisci e monitori le spese per categoria; totali e grafici si
+   aggiornano in tempo reale.
+4. **Capire i documenti**: chat per chiedere il significato di sigle e voci (con guardrail
+   anti-consigli). I dati restano nel tuo browser (localStorage).
+
 ## Principio di design chiave
 
 > **La matematica non è mai allucinata.**
@@ -35,7 +45,8 @@ Si blocca in due momenti:
 
 ```
 /
-├── app/                # La dashboard (index.html, assets/logo.svg, data.js generato)
+├── app/                # La dashboard web (SPA): index.html, styles.css, app.js,
+│                       #   calc.js (specchio di core/), data.js (generato), assets/logo.svg
 ├── core/               # Motore deterministico: calcoli puri, NIENTE I/O (single source)
 │   ├── finance_math.py #   budget, %, delta mese, ricorrenze
 │   ├── categories.py   #   categorie (necessario/extra)
