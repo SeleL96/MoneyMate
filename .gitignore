@@ -1,0 +1,23 @@
+# Dipendenze
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Config locale / segreti (mai committare)
+.claude/settings.local.json
+CLAUDE.local.md
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Build
+dist/
+build/
+*.log
